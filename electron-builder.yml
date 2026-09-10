@@ -1,0 +1,17 @@
+appId: com.notch.app
+productName: NotchBar
+directories:
+  output: dist
+files:
+  - out/**/*
+mac:
+  target:
+    - target: dir
+      arch:
+        - arm64
+    - target: dmg
+      arch:
+        - arm64
+  category: public.app-category.utilities
+  darkModeSupport: true
+  identity: null
