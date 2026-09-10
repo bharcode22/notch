@@ -12,7 +12,7 @@ const notchAPI: NotchAPI = {
   setExpanded: (expanded: boolean): void => {
     ipcRenderer.send('set-notch-expanded', expanded)
   },
-  setIgnoreMouseEvents: (ignore: boolean, forward = false): void => {
+  setIgnoreMouseEvents: (ignore: boolean, forward = true): void => {
     ipcRenderer.send('set-ignore-mouse-events', ignore, forward)
   },
   getSystemInfo: (): Promise<{ platform: string; arch: string }> => {

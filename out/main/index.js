@@ -5,32 +5,23 @@ import __cjs_mod__ from "node:module";
 const __filename = import.meta.filename;
 const __dirname = import.meta.dirname;
 const require2 = __cjs_mod__.createRequire(import.meta.url);
-const COLLAPSED_WIDTH = 185;
-const COLLAPSED_HEIGHT = 34;
 const EXPANDED_WIDTH = 680;
 const EXPANDED_HEIGHT = 210;
+const TOP_OFFSET = 24;
 let mainWindow = null;
 let isExpandedState = false;
-function getCollapsedBounds() {
-  const primaryDisplay = screen.getPrimaryDisplay();
-  const { bounds } = primaryDisplay;
-  const x = Math.round(bounds.x + (bounds.width - COLLAPSED_WIDTH) / 2);
-  const y = bounds.y;
-  return { x, y, width: COLLAPSED_WIDTH, height: COLLAPSED_HEIGHT };
-}
-function getExpandedBounds() {
+function getWindowBounds() {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { bounds } = primaryDisplay;
   const x = Math.round(bounds.x + (bounds.width - EXPANDED_WIDTH) / 2);
-  const y = bounds.y;
-  return { x, y, width: EXPANDED_WIDTH, height: EXPANDED_HEIGHT };
+  const y = bounds.y - TOP_OFFSET;
+  return { x, y, width: EXPANDED_WIDTH, height: EXPANDED_HEIGHT + TOP_OFFSET };
 }
 function updatePosition(win) {
-  const bounds = isExpandedState ? getExpandedBounds() : getCollapsedBounds();
-  win.setBounds(bounds);
+  win.setBounds(getWindowBounds());
 }
 function createWindow() {
-  const initialBounds = getCollapsedBounds();
+  const initialBounds = getWindowBounds();
   const preloadPath = existsSync(join(__dirname, "../preload/index.mjs")) ? join(__dirname, "../preload/index.mjs") : join(__dirname, "../preload/index.js");
   console.log("[Main Process] Initializing window with bounds:", initialBounds);
   console.log("[Main Process] Loading preload script from:", preloadPath);
@@ -40,15 +31,16 @@ function createWindow() {
     frame: false,
     transparent: true,
     hasShadow: false,
-    resizable: true,
+    resizable: false,
     movable: false,
     acceptFirstMouse: true,
     alwaysOnTop: true,
     hiddenInMissionControl: true,
     skipTaskbar: true,
     enableLargerThanScreen: true,
-    roundedCorners: false,
+    roundedCorners: true,
     backgroundColor: "#00000000",
+    visualEffectState: "active",
     webPreferences: {
       preload: preloadPath,
       sandbox: false,
@@ -98,11 +90,15 @@ ipcMain.on("set-notch-expanded", (_event, expanded) => {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   if (isExpandedState === expanded) return;
   isExpandedState = expanded;
-  const bounds = expanded ? getExpandedBounds() : getCollapsedBounds();
-  console.log("[Main Process] Window setBounds ->", bounds);
-  mainWindow.setBounds(bounds);
   if (expanded) {
+    mainWindow.setVibrancy("under-window");
     mainWindow.focus();
+  } else {
+    setTimeout(() => {
+      if (!isExpandedState && mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.setVibrancy(null);
+      }
+    }, 200);
   }
 });
 ipcMain.on("set-ignore-mouse-events", (event, ignore, forward = true) => {

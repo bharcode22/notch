@@ -16,56 +16,8 @@ export const QuickActionsWidget: React.FC = () => {
 
   return (
     <div className="flex flex-col justify-between w-full h-full px-2 py-1">
-      <div className="grid grid-cols-3 gap-2.5">
-        {/* Do Not Disturb Toggle */}
-        <button
-          onClick={() => setDnd(!dnd)}
-          className={`flex items-center gap-2.5 p-2 rounded-xl border transition-all ${dnd
-            ? 'bg-purple-600/30 border-purple-500/50 text-white'
-            : 'bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10'
-            }`}
-        >
-          <Moon className={`w-4 h-4 ${dnd ? 'text-purple-400 fill-purple-400' : 'text-neutral-400'}`} />
-          <div className="text-left">
-            <div className="text-[11px] font-medium leading-none">Focus</div>
-            <div className="text-[9px] text-neutral-400 mt-0.5">{dnd ? 'Active' : 'Off'}</div>
-          </div>
-        </button>
 
-        {/* Mic Mute Toggle */}
-        <button
-          onClick={() => setMicMuted(!micMuted)}
-          className={`flex items-center gap-2.5 p-2 rounded-xl border transition-all ${micMuted
-            ? 'bg-red-500/30 border-red-500/50 text-white'
-            : 'bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10'
-            }`}
-        >
-          {micMuted ? (
-            <MicOff className="w-4 h-4 text-red-400" />
-          ) : (
-            <Mic className="w-4 h-4 text-neutral-400" />
-          )}
-          <div className="text-left">
-            <div className="text-[11px] font-medium leading-none">Microphone</div>
-            <div className="text-[9px] text-neutral-400 mt-0.5">{micMuted ? 'Muted' : 'Live'}</div>
-          </div>
-        </button>
-
-        {/* True Tone Toggle */}
-        <button
-          onClick={() => setTrueTone(!trueTone)}
-          className={`flex items-center gap-2.5 p-2 rounded-xl border transition-all ${trueTone
-            ? 'bg-amber-500/20 border-amber-500/40 text-white'
-            : 'bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10'
-            }`}
-        >
-          <Sun className={`w-4 h-4 ${trueTone ? 'text-amber-400' : 'text-neutral-400'}`} />
-          <div className="text-left">
-            <div className="text-[11px] font-medium leading-none">True Tone</div>
-            <div className="text-[9px] text-neutral-400 mt-0.5">{trueTone ? 'On' : 'Off'}</div>
-          </div>
-        </button>
-      </div>
+      <p>hallo world</p>
 
       {/* Footer / Utilities */}
       <div className="flex items-center justify-between pt-1 border-t border-white/10 text-neutral-400 text-xs">

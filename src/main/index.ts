@@ -2,37 +2,27 @@ import { app, shell, BrowserWindow, screen, ipcMain } from 'electron'
 import { join } from 'path'
 import { existsSync } from 'fs'
 
-const COLLAPSED_WIDTH = 185
-const COLLAPSED_HEIGHT = 34
 const EXPANDED_WIDTH = 680
 const EXPANDED_HEIGHT = 210
+const TOP_OFFSET = 24 // Offset to push native top rounded corners offscreen, keeping top edge completely flat
 
 let mainWindow: BrowserWindow | null = null
 let isExpandedState = false
 
-function getCollapsedBounds(): { x: number; y: number; width: number; height: number } {
-  const primaryDisplay = screen.getPrimaryDisplay()
-  const { bounds } = primaryDisplay
-  const x = Math.round(bounds.x + (bounds.width - COLLAPSED_WIDTH) / 2)
-  const y = bounds.y
-  return { x, y, width: COLLAPSED_WIDTH, height: COLLAPSED_HEIGHT }
-}
-
-function getExpandedBounds(): { x: number; y: number; width: number; height: number } {
+function getWindowBounds(): { x: number; y: number; width: number; height: number } {
   const primaryDisplay = screen.getPrimaryDisplay()
   const { bounds } = primaryDisplay
   const x = Math.round(bounds.x + (bounds.width - EXPANDED_WIDTH) / 2)
-  const y = bounds.y
-  return { x, y, width: EXPANDED_WIDTH, height: EXPANDED_HEIGHT }
+  const y = bounds.y - TOP_OFFSET
+  return { x, y, width: EXPANDED_WIDTH, height: EXPANDED_HEIGHT + TOP_OFFSET }
 }
 
 function updatePosition(win: BrowserWindow): void {
-  const bounds = isExpandedState ? getExpandedBounds() : getCollapsedBounds()
-  win.setBounds(bounds)
+  win.setBounds(getWindowBounds())
 }
 
 function createWindow(): void {
-  const initialBounds = getCollapsedBounds()
+  const initialBounds = getWindowBounds()
   const preloadPath = existsSync(join(__dirname, '../preload/index.mjs'))
     ? join(__dirname, '../preload/index.mjs')
     : join(__dirname, '../preload/index.js')
@@ -46,15 +36,16 @@ function createWindow(): void {
     frame: false,
     transparent: true,
     hasShadow: false,
-    resizable: true,
+    resizable: false,
     movable: false,
     acceptFirstMouse: true,
     alwaysOnTop: true,
     hiddenInMissionControl: true,
     skipTaskbar: true,
     enableLargerThanScreen: true,
-    roundedCorners: false,
+    roundedCorners: true,
     backgroundColor: '#00000000',
+    visualEffectState: 'active',
     webPreferences: {
       preload: preloadPath,
       sandbox: false,
@@ -122,12 +113,15 @@ ipcMain.on('set-notch-expanded', (_event, expanded: boolean) => {
   if (isExpandedState === expanded) return
   isExpandedState = expanded
 
-  const bounds = expanded ? getExpandedBounds() : getCollapsedBounds()
-  console.log('[Main Process] Window setBounds ->', bounds)
-  mainWindow.setBounds(bounds)
-
   if (expanded) {
+    mainWindow.setVibrancy('under-window')
     mainWindow.focus()
+  } else {
+    setTimeout(() => {
+      if (!isExpandedState && mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.setVibrancy(null)
+      }
+    }, 200)
   }
 })
 
