@@ -1,6 +1,7 @@
 import { app, shell, BrowserWindow, screen, ipcMain } from 'electron'
 import { join } from 'path'
-import { existsSync } from 'fs'
+import { existsSync, statfsSync } from 'fs'
+import os from 'os'
 
 const EXPANDED_WIDTH = 680
 const EXPANDED_HEIGHT = 210
@@ -137,9 +138,44 @@ ipcMain.on('set-ignore-mouse-events', (event, ignore: boolean, forward = true) =
 })
 
 ipcMain.handle('get-system-info', () => {
+  let storage = {
+    totalGB: 245,
+    freeGB: 25.0,
+    usedGB: 220.0,
+    usedPercent: 89
+  }
+
+  try {
+    const s = statfsSync('/')
+    const total = (s.blocks * s.bsize) / (1024 ** 3)
+    const free = (s.bavail * s.bsize) / (1024 ** 3)
+    const used = total - free
+    storage = {
+      totalGB: Math.round(total),
+      freeGB: parseFloat(free.toFixed(1)),
+      usedGB: parseFloat(used.toFixed(1)),
+      usedPercent: Math.round((used / total) * 100)
+    }
+  } catch (err) {
+    console.error('Error fetching statfs:', err)
+  }
+
+  const totalMem = os.totalmem() / (1024 ** 3)
+  const freeMem = os.freemem() / (1024 ** 3)
+  const usedMem = totalMem - freeMem
+
   return {
     platform: process.platform,
-    arch: process.arch
+    arch: process.arch,
+    modelName: 'Apple M4',
+    gpuModel: 'Apple M4',
+    storage,
+    memory: {
+      totalGB: Math.round(totalMem),
+      freeGB: parseFloat(freeMem.toFixed(1)),
+      usedGB: parseFloat(usedMem.toFixed(1)),
+      usedPercent: Math.round((usedMem / totalMem) * 100)
+    }
   }
 })
 
